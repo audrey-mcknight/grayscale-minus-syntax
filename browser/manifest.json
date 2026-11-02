@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Grayscale · Code Friendly",
+  "version": "0.1.0",
+  "description": "Experimental highlight-preserving page grayscale, a contrast control, and lighter media-only styling. Choose a mode per site.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "action": { "default_popup": "popup.html", "default_title": "Grayscale · Code Friendly" },
+  "content_scripts": [{
+    "matches": ["https://x.com/*", "https://*.x.com/*", "https://twitter.com/*", "https://*.twitter.com/*", "https://lesswrong.com/*", "https://*.lesswrong.com/*"],
+    "js": ["highlights.js", "content.js"],
+    "run_at": "document_start"
+  }]
+}

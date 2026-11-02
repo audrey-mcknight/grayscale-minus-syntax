@@ -1,45 +1,62 @@
-<img src="https://github.com/brettferdosi/grayscale/raw/doc/icon.png" width="150px">
+# Grayscale · Code Friendly
 
-# grayscale
+A lightweight macOS menu bar app and browser companion for a quieter screen without losing syntax highlighting.
 
-`grayscale` is a macOS status bar app for managing the system grayscale display filter. It allows you to toggle grayscale mode easily by clicking the status bar icon or using a keyboard shortcut, and it also supports enabling or disabling grayscale based on which application is currently active.
+Grayscale is on by default. iTerm2, Terminal, Xcode, and Chrome start as color exceptions. The browser extension offers experimental page-wide grayscale that preserves code and text highlights, plus a contrast slider. A separate static Chrome theme quiets the tab strip.
 
-Using the grayscale filter can help you reduce your screen time. For more information, check out the following links:
+## How it works
 
-- https://www.nytimes.com/2018/01/12/technology/grayscale-phone.html
-- https://blog.mozilla.org/internetcitizen/2018/02/13/grayscale/
+The Mac app uses the system display filter, switching only when needed as you change apps. Click the menu icon to toggle the saved default. Right-click to set the focused app to Default, Enable Grayscale, or Disable Grayscale (color), or configure the keyboard shortcut. Defaults persist across launches; existing app rules are preserved.
 
-<img src="https://github.com/brettferdosi/grayscale/raw/doc/demo.png">
+The system filter affects the entire screen. When a color exception is focused, all visible windows are colorful. Different native windows cannot simultaneously use different filters through this implementation.
 
-`grayscale` has been tested on macOS 11 Big Sur but may also work on other versions.
+Keep your browser in color in the Mac app. The extension supplies grayscale within supported pages. Choose a mode per site:
 
-## Using grayscale
+- **Gray page · preserve highlights (experimental)**: neutralizes ordinary CSS text, box colors, borders, shadows, gradients, and media while retaining `pre`, `code`, `mark`, `.hljs`, and `[data-grayscale-preserve]` text/highlights. Includes a page contrast slider (85–140%, saved with Apply).
+- **Gray media**: the simpler CSS-only option, leaving all text/interface colors intact.
+- **Full grayscale**: one page filter, including highlights.
+- **Color**: leave the page alone.
 
-`grayscale` enables or disables grayscale mode based on the active application. It stores a default grayscale value, which determines whether grayscale mode should be on or off for all applications that have not overridden it. To toggle the default value, you can left click the status bar icon or use a keyboard shortcut. Right-clicking the icon brings up a menu, which allows you to view the default value, override it for the active application, and configure the keyboard shortcut.
+The experimental mode reacts to page changes, restoring original styles when switched off. It has no polling loop or background worker. Layout-only inline animations are ignored. It requires modern CSS relative-color support. Arbitrary shadow DOM, cross-origin frames, pseudo-element artwork, nested gradient syntaxes, browser-internal surfaces, and some complex background imagery are not fully covered. Pages with lots of changing content can cost more work than media-only mode. A local synthetic test of 1,000 colored boxes took about 80 ms to apply once; this is not a battery benchmark or a guarantee for other pages. Media filters preserve existing blur.
 
-`grayscale` is designed to make using grayscale mode practical. It's not realistic to keep your screen in grayscale all the time, and automatic transitions reduce the burden of manually turning it on and off. I recommend enabling grayscale by default and disabling it for specific applications that benefit from colors but don't use them to capture your attention, like a text editor with syntax highlighting. Potentially addictive applications that sometimes need color, like web browsers, can then be used with the default setting (i.e. with grayscale enabled), and you can use the keyboard shortcut to toggle grayscale as necessary.
+This preserves highlighting a website already provides. It does not add a syntax highlighter to unformatted code, and cannot restore color through an enabled system-wide grayscale filter. Code screenshots and canvas-rendered code remain images and become gray.
 
-## Installing grayscale
+## Quiet the tab strip
 
-**Install option 1: homebrew**
+Load the `theme` folder as a separate unpacked Chrome theme. Clear Tabs uses a dark gray frame and a lighter active tab/toolbar, with readable gray text. It is a 717-byte manifest with no running code or permissions. Chrome supports one theme at a time.
 
-Run `brew install --cask --no-quarantine brettferdosi/tap/grayscale`. `grayscale.app` will be
-installed in `/Applications`.
+Theme APIs cannot remove every browser color: favicons, tab groups, avatars, and some indicators can remain colorful. A page extension cannot style Chrome’s tab strip. The page contrast slider does not change the static browser theme. See [theme details](theme/README.md).
 
-**Install option 2: run the installer (easiest for non-technical users)**
+## Build the Mac app
 
-Download the [most recent installer](https://github.com/brettferdosi/grayscale/releases/latest/download/GrayscaleInstaller.pkg) (`GrayscaleInstaller.pkg`) from the [releases page](https://github.com/brettferdosi/grayscale/releases).
-To run the installer, control-click its icon, click *Open*, then click *Open* again.
-See the [Apple support page](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac) if the process for running apps from unidentified developers has changed.
-It will install `grayscale.app` in `/Applications`.
-If there is already a version of `grayscale.app` on your system, the installer will detect and overwrite it.
+Requires Xcode and macOS 12 or later for this build configuration.
 
-**Install option 3: build from source**
+```sh
+git clone --recurse-submodules <your-fork-url>
+cd grayscale
+make app
+```
 
-Clone this git repository using `git clone --recurse-submodules` and run `make` in it.
-`grayscale.app` will be placed into `build/Build/Products/Release`.
+Open `build/Build/Products/Release/grayscale.app`. It is signed for local use; public distribution has not been notarized. Optionally add it to Login Items yourself. The Mac app requires no account, network connection, screen recording, or browser history access. It uses macOS private display APIs inherited from upstream, so OS updates may affect compatibility.
 
-**Optional: open at login**
+## Install the browser companion
 
-Automatically open `grayscale` at login by adding it to the list in System Settings > General > Login Items.
-See the [Apple support page](https://support.apple.com/guide/mac-help/open-items-automatically-when-you-log-in-mh15189/mac) if the location of the list has changed.
+In Chrome, Brave, Arc, or Edge, open the extensions page, enable Developer mode, click Load unpacked, and select the `browser` folder. Pin the extension. Twitter/X and LessWrong start in experimental highlight-preserving mode; reload already-open tabs once after installation.
+
+For any other site, open its page, click the extension, select a mode, and click Apply on this site. Grant access if prompted. The selected site is updated immediately, and future loads retain its rule. Reload other already-open tabs on that site once. Browser internal pages, browser PDF viewers, extension-store pages, and other protected pages may prohibit styling.
+
+The extension initially runs only on Twitter/X and LessWrong. Other site access is optional and requested when you choose a rule. The activeTab permission reads only the tab you invoke the extension on. Site rules live locally. No browsing history, tab inventory, analytics, accounts, cloud sync, recurring timers, screen capture, or AI calls. The extension has no background service worker. See [Chrome’s unpacked-extension instructions](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked).
+
+Run only one app that controls the system-wide filter at a time.
+
+Native syntax colors are currently tested with Chrome; set your other Chromium browser to Disable Grayscale in the Mac menu before using its companion extension.
+
+## Verify and prepare source
+
+`make test` runs the dependency-free extension rule tests. `browser/smoke.mjs` runs browser integration checks in a fresh synthetic profile; it requires a dev-only Playwright installation and an extension-capable Chromium. Set PLAYWRIGHT_MODULE and CHROMIUM_PATH to reuse local tools.
+
+`make source` creates `build/grayscale-code-friendly-source.zip` from a source allowlist, including dependency source and licenses. It excludes Git metadata, builds, environment files, logs, and unrelated nested workspaces. Nothing is uploaded or published. Battery impact has not been benchmarked.
+
+## Credits and license
+
+Based on [brettferdosi/grayscale](https://github.com/brettferdosi/grayscale) by Brett Gutstein. Original license and credits are preserved in [LICENSE](LICENSE). MASShortcut is included as the original pinned submodule with its own license.

@@ -12,6 +12,7 @@ import Carbon
 // user defaults keys
 let grayscaleShortcutName = "grayscale_shortcut"
 let perAppGrayscaleEnabledDictName = "grayscale_dict"
+let defaultGrayscaleEnabledName = "default_grayscale_enabled"
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -26,9 +27,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         grayscaleLog("")
 
-        defaultGrayscaleEnabled = grayscaleEnabled()
+        UserDefaults.standard.register(defaults: [defaultGrayscaleEnabledName: true])
+        defaultGrayscaleEnabled = UserDefaults.standard.bool(forKey: defaultGrayscaleEnabledName)
         currentApplication = NSWorkspace.shared.frontmostApplication!
         perAppGrayscaleEnabledDict = UserDefaults.standard.dictionary(forKey: perAppGrayscaleEnabledDictName) as? [String: Bool] ?? [:]
+        if !UserDefaults.standard.bool(forKey: "code_friendly_defaults_installed") {
+            for bundleID in ["com.googlecode.iterm2", "com.apple.Terminal", "com.apple.dt.Xcode", "com.google.Chrome"]
+                where perAppGrayscaleEnabledDict[bundleID] == nil {
+                perAppGrayscaleEnabledDict[bundleID] = false
+            }
+            UserDefaults.standard.set(perAppGrayscaleEnabledDict, forKey: perAppGrayscaleEnabledDictName)
+            UserDefaults.standard.set(true, forKey: "code_friendly_defaults_installed")
+        }
 
         createUI()
         updateUI()
@@ -37,6 +47,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(handleApplicationChange(_:)), name: NSWorkspace.didActivateApplicationNotification, object: nil)
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(handleDisplayChange(_:)), name: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(handleWake(_:)), name: NSWorkspace.didWakeNotification, object: nil)
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -56,10 +67,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func handleApplicationChange(_ aNotification: Notification) {
-        currentApplication = (aNotification.userInfo!["NSWorkspaceApplicationKey"] as! NSRunningApplication)
-        grayscaleLog("\(currentApplication.localizedName!) got focus")
+        guard let app = aNotification.userInfo?["NSWorkspaceApplicationKey"] as? NSRunningApplication,
+              app.bundleIdentifier != Bundle.main.bundleIdentifier else { return }
+        currentApplication = app
         updateUI()
     }
+
+    @objc func handleWake(_ notification: Notification) { updateUI() }
 
     @objc func appSpecificMenuClick(_ sender: Any) {
         defer {
@@ -94,6 +108,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func toggleDefaultGrayscale() {
         grayscaleLog("toggling default from \(defaultGrayscaleEnabled)")
         defaultGrayscaleEnabled = !defaultGrayscaleEnabled
+        UserDefaults.standard.set(defaultGrayscaleEnabled, forKey: defaultGrayscaleEnabledName)
         updateUI()
     }
 
@@ -114,7 +129,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func updateUI() {
         defaultGrayscaleMenuItem.title = defaultGrayscaleEnabled ? "Grayscale Default: Enabled" : "Grayscale Default: Disabled"
-        appSpecificMenuItem.title = currentApplication.localizedName!
+        appSpecificMenuItem.title = currentApplication.localizedName ?? "Current app"
 
         if let bundleIdentifier = currentApplicationBundleIdentifier,
            let appSpecificEnableGrayscale = perAppGrayscaleEnabledDict[bundleIdentifier] {

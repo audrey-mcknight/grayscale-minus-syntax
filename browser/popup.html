@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Grayscale · Code Friendly</title><link rel="stylesheet" href="popup.css"></head>
+<body><main><h1>Grayscale, with color for code.</h1><p id="site">Loading this site…</p>
+<label for="mode">On this site</label><select id="mode"><option value="highlights">Gray page · preserve highlights (experimental)</option><option value="media">Gray media · keep text colors</option><option value="all">Full grayscale</option><option value="off">Color</option></select>
+<label for="contrast">Page contrast <output id="contrast-value">100%</output></label>
+<input id="contrast" type="range" min="85" max="140" step="5" value="100">
+<button id="apply" disabled>Apply on this site</button><p id="status" role="status"></p>
+<p class="note">Other sites need your permission before a rule can run. Images of code and canvas code are media, so they turn gray too.</p>
+<p class="note">Keep your browser in color in the Mac app. A system-wide grayscale filter removes syntax colors as well.</p>
+<p class="note">Page contrast applies to highlight-preserving mode. The separate Clear Tabs theme supplies a neutral browser frame; browser icons may retain color.</p>
+</main><script src="popup.js" type="module"></script></body></html>

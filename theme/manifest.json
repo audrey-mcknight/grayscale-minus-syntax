@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Grayscale · Clear Tabs",
+  "version": "0.1.0",
+  "description": "Neutral gray Chrome frame with a lighter active tab and readable inactive tabs. No running code.",
+  "theme": {
+    "colors": {
+      "frame": [54, 54, 54],
+      "frame_inactive": [74, 74, 74],
+      "toolbar": [222, 222, 222],
+      "tab_text": [22, 22, 22],
+      "tab_background_text": [232, 232, 232],
+      "bookmark_text": [28, 28, 28],
+      "ntp_background": [240, 240, 240],
+      "ntp_text": [32, 32, 32],
+      "ntp_link": [48, 48, 48]
+    },
+    "tints": {
+      "buttons": [-1, 0, -1],
+      "frame": [-1, 0, -1],
+      "frame_inactive": [-1, 0, -1],
+      "background_tab": [-1, 0, -1]
+    }
+  }
+}
